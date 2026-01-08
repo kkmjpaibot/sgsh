@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KKMJP SuperAgent</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='Chatbot.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="chat-header">
+        <img src="{{ url_for('static', filename='bot.png') }}" class="chat-logo" alt="Bot">
+        <div class="chat-title">KKMJP SUPERAGENT</div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="chat" class="chat-messages" aria-live="polite"></div>
+
+    <!-- INPUT -->
+    <div class="input-area">
+        <textarea 
+            id="messageInput" 
+            placeholder="Please select an option above" 
+            rows="1"></textarea>
+
+        <button id="restartInlineBtn" class="restart-inline-btn" hidden>Restart</button>
+        <button id="sendBtn">Send</button>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='Chatbot.js') }}"></script>
+</body>
+</html>
