@@ -1,13 +1,19 @@
 # emailservice.py
 # Auto-send personalised summary email using Google Sheets data
 # Modern 2025-style email UI with fixed WhatsApp number
+# Includes PDF attachment: Benefits.pdf
+# UTF-8 safe for emojis and special characters
 
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+from email.header import Header
 from google.oauth2.service_account import Credentials
 import gspread
 from datetime import datetime
+import os
 
 # -------------------------------------------------
 # GMAIL SMTP CONFIG
@@ -62,7 +68,8 @@ def v(row, key):
         "Income": ["income"],
         "Phone": ["phone"],
         "Dependents": ["dependents"],
-        "Email": ["email", "Email Address"]
+        "Email": ["email", "Email Address"],
+        "Age": ["age"]
     }
     for k, alts in alt_map.items():
         if norm(key) == norm(k):
@@ -249,23 +256,39 @@ def build_email_html(row):
 """
 
 # -------------------------------------------------
-# SEND EMAIL
+# SEND EMAIL (UTF-8 safe, with PDF attachment)
 # -------------------------------------------------
-def send_email(to_email, subject, html_content):
-    msg = MIMEMultipart("alternative")
+def send_email(to_email, subject, html_content, attachment_path="Benefits.pdf"):
+    msg = MIMEMultipart("mixed")  # use mixed to allow attachments
     msg["From"] = f"{SENDER_NAME} <{SMTP_USERNAME}>"
     msg["To"] = to_email
-    msg["Subject"] = subject
+    msg["Subject"] = Header(subject, 'utf-8')  # UTF-8 subject
 
-    # HTML content
-    msg.attach(MIMEText(html_content, "html"))
+    # HTML body in UTF-8
+    html_part = MIMEText(html_content, "html", "utf-8")
+    msg.attach(html_part)
 
+    # Attach PDF if exists
+    if attachment_path and os.path.isfile(attachment_path):
+        with open(attachment_path, "rb") as f:
+            part = MIMEBase("application", "pdf")
+            part.set_payload(f.read())
+            encoders.encode_base64(part)
+            part.add_header(
+                "Content-Disposition",
+                f'attachment; filename="{os.path.basename(attachment_path)}"',
+            )
+            msg.attach(part)
+    else:
+        print(f"[Warning] Attachment not found: {attachment_path}")
+
+    # Send email
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         server.starttls()
         server.login(SMTP_USERNAME, SMTP_PASSWORD)
         server.send_message(msg)
 
-    print(f"[Email] Sent → {to_email}")
+    print(f"[Email] Sent → {to_email} (with attachment: {os.path.basename(attachment_path)})")
 
 # -------------------------------------------------
 # UPDATE EmailSent COLUMN
@@ -303,7 +326,7 @@ def process_pending_emails():
             html = build_email_html(row)
             subject = "Your Personalised Income Protection Summary"
 
-            send_email(email, subject, html)
+            send_email(email, subject, html)  # PDF included by default
             update_email_sent(sheet, idx)
 
         except Exception as e:
