@@ -79,39 +79,26 @@ class SGSHChatbot:
         if self.state == "ask_dob":
             if not message:
                 return "You did not enter anything.\nPlease enter your Date of Birth (DD/MM/YYYY)."
-            
+
             age = self.calculate_age(message)
-            
             if age is None:
                 return (
-            "Invalid date format, please try again ❌\n"
-            "Please enter your Date of Birth as DD/MM/YYYY\n"
-            "Example: 25/12/1990"
-        )
-            if age < 18:
-                return (
-                    f"You are {age} years old.\n"
-                    "Sorry, this service is only available for users aged 18 and above."
+                    "Invalid date format, please try again ❌\n"
+                    "Please enter your Date of Birth as DD/MM/YYYY\n"
+                    "Example: 25/12/1990"
                 )
-            
-            if age >= 80:
-                return (
-            f"You are {age} years old.\n"
-            "Sorry, this service is only available for users below 80 years old."
-        )
+
             self.user_data["dob"] = message
             self.user_data["age"] = age
             self.state = "ask_life_stage"
             return (
-                f"Great! You are {age} years old.\n"
-                "It is the perfect age to start building a strong foundation for your future savings.\n"
-                "May I know what is your current life stage?\n"
-                "1. Just married\n"
-                "2. I have a young child / Children\n"
-                "3. Nearing Retirement \n"
-                "4. Single and independent"
-                  )
-
+                f"Great! You are {age} years old.\n It is the perfect age to start building a strong foundation for your future savings"
+                f"May I know what is your current life stage?\n"
+                f"1. Just married\n"
+                f"2. I have a young child / Children\n"
+                f"3. Nearing Retirement \n"
+                f"4. Single and independent"
+            )
 
         # --- Step 4: Ask for life stage ---
         if self.state == "ask_life_stage":
